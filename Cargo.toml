@@ -1,0 +1,27 @@
+[package]
+name = "amber"
+version = "0.1.0"
+authors = ["Michael Snoyman <michael@snoyman.com>"]
+edition = "2018"
+description = "Manage secret values in-repo via public key cryptography"
+readme = "README.md"
+homepage = "https://github.com/fpco/amber"
+repository = "https://github.com/fpco/amber"
+license = "MIT"
+keywords = ["continuous-integration", "secrets", "encryption"]
+categories = ["command-line-utilities"]
+
+[dependencies]
+anyhow = "1"
+clap = "~3.0.0-beta.2"
+env_logger = "0.9"
+fs-err = "2.6"
+log = "0.4"
+once_cell = "1.8"
+serde = { version = "1", features = ["derive"] }
+serde_yaml = "0.8.17"
+sodiumoxide = "0.2.7"
+
+[build-dependencies]
+anyhow = "1"
+vergen = { version = "5.1.1", default-features = false, features = ["git"] }
