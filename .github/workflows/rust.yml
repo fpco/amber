@@ -63,10 +63,14 @@ jobs:
       run: sudo apt-get install -y musl-tools
     - name: Build
       run: cargo build --release --target x86_64-unknown-linux-musl
+    - name: Rename
+      run: |
+        mkdir artifacts
+        cp target/x86_64-unknown-linux-musl/release/amber artifacts/amber-x86_64-unknown-linux-musl
     - uses: actions/upload-artifact@v2
       with:
-        name: linux
-        path: target/x86_64-unknown-linux-musl/release/amber
+        name: binaries
+        path: artifacts/*
 
   macos-binary:
     runs-on: macos-latest
@@ -83,10 +87,14 @@ jobs:
         key: ${{ runner.os }}-${{ hashFiles('Cargo.lock') }}-1.54.0-binary
     - name: Build
       run: cargo build --release
+    - name: Rename
+      run: |
+        mkdir artifacts
+        cp target/release/amber artifacts/amber-x86_64-apple-darwin
     - uses: actions/upload-artifact@v2
       with:
-        name: macos
-        path: target/release/amber
+        name: binaries
+        path: artifacts/*
 
   windows-binary:
     runs-on: windows-latest
@@ -103,7 +111,11 @@ jobs:
         key: ${{ runner.os }}-${{ hashFiles('Cargo.lock') }}-1.54.0-binary
     - name: Build
       run: cargo build --release
+    - name: Rename
+      run: |
+        mkdir artifacts
+        cp target/release/amber.exe artifacts/amber-x86_64-pc-windows-gnu.exe
     - uses: actions/upload-artifact@v2
       with:
-        name: windows
-        path: target/release/amber.exe
+        name: binaries
+        path: artifacts/*
