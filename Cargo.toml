@@ -11,6 +11,11 @@ license = "MIT"
 keywords = ["continuous-integration", "secrets", "encryption"]
 categories = ["command-line-utilities"]
 
+[features]
+default = ["aws", "azure"]
+aws = ["rusoto_secretsmanager", "rusoto_core", "tokio"]
+azure = []
+
 [dependencies]
 anyhow = "1"
 clap = "~3.0.0-beta.2"
@@ -21,6 +26,9 @@ once_cell = "1.8"
 serde = { version = "1", features = ["derive"] }
 serde_yaml = "0.8.17"
 sodiumoxide = "0.2.7"
+rusoto_secretsmanager = { version = "0.47", optional = true, features = ["rustls"], default-features = false }
+rusoto_core = { version = "0.47", optional = true, features = ["rustls"], default-features = false }
+tokio = { version = "1", optional = true, features = ["full"] }
 
 [build-dependencies]
 anyhow = "1"

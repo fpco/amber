@@ -1,3 +1,4 @@
+use std::str::FromStr;
 use std::{collections::HashMap, path::Path};
 
 use anyhow::*;
@@ -70,6 +71,11 @@ impl Config {
             secrets: HashMap::new(),
         };
         (secret, config)
+    }
+
+    /// Get the public key
+    pub fn get_public_key(&self) -> &PublicKey {
+        &self.public_key
     }
 
     fn from_raw(raw: ConfigRaw) -> Result<Self> {
@@ -173,23 +179,14 @@ impl Config {
     /// Get the secret key from the environment variable
     ///
     /// Validates that it matches up with the public key
-    pub fn load_secret_key(&self) -> Result<SecretKey> {
-        (|| {
-            let hex = std::env::var(SECRET_KEY_ENV)?;
-            let bs = hex::decode(&hex).ok().context("Invalid hex encoding")?;
-            let secret = SecretKey::from_slice(&bs).context("Invalid secret key")?;
-            ensure!(
-                secret.public_key() == self.public_key,
-                "Secret key does not match config file's public key"
-            );
-            Ok(secret)
-        })()
-        .with_context(|| {
-            format!(
-                "Error loading secret key from environment variable {}",
-                SECRET_KEY_ENV
-            )
-        })
+    pub fn load_secret_key(&self, opt: &crate::cli::Opt) -> Result<SecretKey> {
+        let secret = opt.secret_key_source.load(opt, self)?;
+        log::debug!("Secret key loaded, checking that it matches the public key");
+        ensure!(
+            secret.public_key() == self.public_key,
+            "Secret key does not match config file's public key"
+        );
+        Ok(secret)
     }
 
     /// Iterate over the secrets
@@ -237,5 +234,58 @@ impl Secret {
             String::from_utf8(plain).context("Invalid UTF-8 encoding")
         })()
         .with_context(|| format!("Error while decrypting secret named {}", key))
+    }
+}
+
+/// Where does the secret key come from?
+#[derive(Debug, Clone, Copy)]
+pub enum SecretKeySource {
+    /// Environment variable
+    Env,
+    /// AWS Secrets Manager
+    Aws,
+    /// Azure Key Vault
+    Azure,
+}
+
+impl FromStr for SecretKeySource {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "env" => Ok(SecretKeySource::Env),
+            "aws" => Ok(SecretKeySource::Aws),
+            "azure" => Ok(SecretKeySource::Azure),
+            _ => Err(anyhow!("Unknown secret key source: {}", s)),
+        }
+    }
+}
+
+impl SecretKeySource {
+    fn load(&self, opt: &crate::cli::Opt, config: &Config) -> Result<SecretKey> {
+        match self {
+            SecretKeySource::Env => Self::load_env(),
+            SecretKeySource::Aws => {
+                #[cfg(feature = "aws")]
+                return crate::aws::load(&opt.aws_region, config.get_public_key());
+                #[cfg(not(feature = "aws"))]
+                bail!("Cannot load from AWS, compiled without AWS support");
+            }
+            SecretKeySource::Azure => todo!(),
+        }
+    }
+
+    fn load_env() -> Result<SecretKey> {
+        (|| {
+            let hex = std::env::var(SECRET_KEY_ENV)?;
+            let bs = hex::decode(&hex).ok().context("Invalid hex encoding")?;
+            SecretKey::from_slice(&bs).context("Invalid secret key")
+        })()
+        .with_context(|| {
+            format!(
+                "Error loading secret key from environment variable {}",
+                SECRET_KEY_ENV
+            )
+        })
     }
 }
