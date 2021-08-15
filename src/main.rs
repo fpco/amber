@@ -1,3 +1,5 @@
+#[cfg(feature = "aws")]
+mod aws;
 mod cli;
 mod config;
 mod exec;
@@ -18,8 +20,8 @@ fn main() -> Result<()> {
 }
 
 fn init(opt: cli::Opt) -> Result<()> {
-    let (secret_key, config) = config::Config::new();
-    let secret_key = sodiumoxide::hex::encode(secret_key);
+    let (secret_key_, config) = config::Config::new();
+    let secret_key = sodiumoxide::hex::encode(&secret_key_);
 
     config.save(&opt.amber_yaml)?;
 
@@ -30,6 +32,15 @@ fn init(opt: cli::Opt) -> Result<()> {
     eprintln!("Recommendation: keep it in a password manager");
     eprintln!("If you're using this for CI, please update your CI configuration with a secret environment variable");
     println!("export {}={}", config::SECRET_KEY_ENV, secret_key);
+
+    match opt.secret_key_source {
+        config::SecretKeySource::Env => (),
+        config::SecretKeySource::Aws => {
+            #[cfg(feature = "aws")]
+            aws::save(&opt.aws_region, config.get_public_key(), &secret_key_)?;
+        }
+        config::SecretKeySource::Azure => todo!(),
+    }
 
     Ok(())
 }
@@ -64,7 +75,7 @@ fn remove(opt: cli::Opt, key: String) -> Result<()> {
 
 fn print(opt: cli::Opt) -> Result<()> {
     let config = config::Config::load(&opt.amber_yaml)?;
-    let secret = config.load_secret_key()?;
+    let secret = config.load_secret_key(&opt)?;
     let pairs: Result<Vec<_>> = config.iter_secrets(&secret).collect();
     let mut pairs = pairs?;
     pairs.sort_by(|x, y| x.0.cmp(y.0));
@@ -77,7 +88,7 @@ fn print(opt: cli::Opt) -> Result<()> {
 
 fn exec(opt: cli::Opt, cmd: String, args: Vec<String>) -> Result<()> {
     let config = config::Config::load(&opt.amber_yaml)?;
-    let secret_key = config.load_secret_key()?;
+    let secret_key = config.load_secret_key(&opt)?;
 
     let mut cmd = std::process::Command::new(cmd);
     cmd.args(args);

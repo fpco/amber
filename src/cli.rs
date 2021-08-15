@@ -62,6 +62,22 @@ pub struct Opt {
     /// amber.yaml file location
     #[clap(long, default_value = "amber.yaml", global = true, env = "AMBER_YAML")]
     pub amber_yaml: PathBuf,
+    /// Where to get the secret key from? Could be env, aws, or azure
+    #[clap(
+        long,
+        default_value = "env",
+        global = true,
+        env = "AMBER_SECRET_KEY_SOURCE"
+    )]
+    pub secret_key_source: crate::config::SecretKeySource,
+    /// AWS region to use for secrets storage
+    #[clap(
+        long,
+        default_value = "us-east-1",
+        global = true,
+        env = "AWS_DEFAULT_REGION"
+    )]
+    pub aws_region: String,
 }
 
 impl Opt {
