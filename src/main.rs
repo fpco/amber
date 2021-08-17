@@ -12,6 +12,7 @@ fn main() -> Result<()> {
     match cmd.sub {
         cli::SubCommand::Init => init(cmd.opt),
         cli::SubCommand::Encrypt { key, value } => encrypt(cmd.opt, key, value),
+        cli::SubCommand::Generate { key } => generate(cmd.opt, key),
         cli::SubCommand::Remove { key } => remove(cmd.opt, key),
         cli::SubCommand::Print => print(cmd.opt),
         cli::SubCommand::Exec { cmd: cmd_, args } => exec(cmd.opt, cmd_, args),
@@ -54,6 +55,15 @@ fn encrypt(opt: cli::Opt, key: String, value: String) -> Result<()> {
     let mut config = config::Config::load(&opt.amber_yaml)?;
     config.encrypt(key, &value);
     config.save(&opt.amber_yaml)
+}
+
+fn generate(opt: cli::Opt, key: String) -> Result<()> {
+    let value = sodiumoxide::randombytes::randombytes(16);
+    let value = sodiumoxide::base64::encode(value, sodiumoxide::base64::Variant::UrlSafe);
+    let msg = format!("Your new secret value is {}: {}", key, value);
+    let res = encrypt(opt, key, value)?;
+    println!("{}", &msg);
+    Ok(res)
 }
 
 fn remove(opt: cli::Opt, key: String) -> Result<()> {
