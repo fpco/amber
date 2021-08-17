@@ -1,0 +1,5 @@
+This should be unmasked.
+
+This is a SECRET123, but this is just secret1.
+
+Something is OK, but something is hidden.

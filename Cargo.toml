@@ -1,6 +1,6 @@
 [package]
 name = "amber"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Michael Snoyman <michael@snoyman.com>"]
 edition = "2018"
 description = "Manage secret values in-repo via public key cryptography"
@@ -12,6 +12,7 @@ keywords = ["continuous-integration", "secrets", "encryption"]
 categories = ["command-line-utilities"]
 
 [dependencies]
+aho-corasick = "0.7"
 anyhow = "1"
 clap = "~3.0.0-beta.2"
 env_logger = "0.9"
