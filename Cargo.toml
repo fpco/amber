@@ -25,3 +25,8 @@ sodiumoxide = "0.2.7"
 [build-dependencies]
 anyhow = "1"
 vergen = { version = "5.1.1", default-features = false, features = ["git"] }
+
+[profile.release]
+panic = "abort"
+opt-level = "z"
+lto = true
