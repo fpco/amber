@@ -3,11 +3,10 @@
 use std::{
     io::{Read, Write},
     process::{Command, Stdio},
-    sync::Arc,
     thread::spawn,
 };
 
-use aho_corasick::AhoCorasick;
+use aho_corasick::{AhoCorasick, Match};
 use anyhow::*;
 
 /// Run the given command with stdout and stderr values masked.
@@ -25,19 +24,9 @@ pub fn run_masked(mut cmd: Command, secrets: &[impl AsRef<[u8]>]) -> Result<()> 
     let stdout = child.stdout.take().context("No stdout available")?;
     let stderr = child.stderr.take().context("No stderr available")?;
 
-    let mut replacements = Vec::new();
-    for secret in secrets {
-        let len = secret.as_ref().len();
-        let replacement: Vec<u8> = std::iter::repeat(b'*').take(len).collect();
-        replacements.push(replacement);
-    }
-    let replacements = Arc::new(replacements);
-
     let ac_clone = ac.clone();
-    let replacements_clone = replacements.clone();
-    let handle_out =
-        spawn(move || mask_stream(stdout, std::io::stdout(), ac_clone, &*replacements_clone));
-    let handle_err = spawn(move || mask_stream(stderr, std::io::stderr(), ac, &*replacements));
+    let handle_out = spawn(move || mask_stream(stdout, std::io::stdout(), ac_clone));
+    let handle_err = spawn(move || mask_stream(stderr, std::io::stderr(), ac));
 
     handle_out
         .join()
@@ -58,15 +47,13 @@ pub fn run_masked(mut cmd: Command, secrets: &[impl AsRef<[u8]>]) -> Result<()> 
     }
 }
 
-fn mask_stream<R>(
-    input: impl Read,
-    output: impl Write,
-    ac: AhoCorasick,
-    replacements: impl AsRef<[R]>,
-) -> Result<()>
-where
-    R: AsRef<[u8]>,
-{
-    ac.stream_replace_all(input, output, replacements.as_ref())
+fn mask_stream(input: impl Read, output: impl Write, ac: AhoCorasick) -> Result<()> {
+    ac.stream_replace_all_with(input, output, replacer)
         .context("Error while masking a stream")
+}
+
+/// Always use the same length of masked value to avoid exposing information
+/// about the secret length.
+fn replacer(_: &Match, _: &[u8], w: &mut impl Write) -> std::io::Result<()> {
+    w.write_all(b"******")
 }
