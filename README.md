@@ -2,7 +2,7 @@
 
 [![Rust](https://github.com/fpco/amber/actions/workflows/rust.yml/badge.svg)](https://github.com/fpco/amber/actions/workflows/rust.yml)
 
-Manage secret values in-repo via public key cryptography
+Manage secret values in-repo via public key cryptography. See [the announcement blog post](https://www.fpcomplete.com/blog/announcing-amber-ci-secret-tool/) for more motivation.
 
 Amber provides the ability to securely store secret data in a plain-text file. Secrets can be encrypted by anyone with access to the file, without the ability to read those files without a secret key. The file format is a plain text YAML file which minimizes diffs on value changes, making it amenable to tracking changes in version control.
 
