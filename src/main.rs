@@ -1,6 +1,7 @@
 mod cli;
 mod config;
 mod exec;
+mod mask;
 
 use anyhow::*;
 use exec::CommandExecExt;
@@ -82,13 +83,21 @@ fn exec(opt: cli::Opt, cmd: String, args: Vec<String>) -> Result<()> {
     let mut cmd = std::process::Command::new(cmd);
     cmd.args(args);
 
+    let mut secrets = Vec::new();
     for pair in config.iter_secrets(&secret_key) {
         let (name, value) = pair?;
         log::debug!("Setting env var in child process: {}", name);
-        cmd.env(name, value);
+        cmd.env(name, &value);
+        if !opt.unmasked {
+            secrets.push(value);
+        }
     }
 
-    cmd.emulate_exec("Launching child process")?;
+    if opt.unmasked {
+        cmd.emulate_exec("Launching child process")?;
+    } else {
+        mask::run_masked(cmd, &secrets)?;
+    }
 
     Ok(())
 }

@@ -62,6 +62,9 @@ pub struct Opt {
     /// amber.yaml file location
     #[clap(long, default_value = "amber.yaml", global = true, env = "AMBER_YAML")]
     pub amber_yaml: PathBuf,
+    /// Disable masking of secret values during exec
+    #[clap(long, global = true)]
+    pub unmasked: bool,
 }
 
 impl Opt {

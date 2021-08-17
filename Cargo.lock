@@ -13,8 +13,9 @@ dependencies = [
 
 [[package]]
 name = "amber"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
+ "aho-corasick",
  "anyhow",
  "clap",
  "env_logger",

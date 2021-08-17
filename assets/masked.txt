@@ -1,0 +1,5 @@
+This should be unmasked.
+
+This is a *********, but this is just *******.
+
+Something is OK, but ********* is hidden.
