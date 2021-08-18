@@ -29,6 +29,11 @@ pub enum SubCommand {
         /// Value
         value: String,
     },
+    /// Generate a new strong secret value, and add it to the repository
+    Generate {
+        /// Key, must be all capital ASCII characters, digits, and underscores
+        key: String,
+    },
     /// Remove a secret
     Remove {
         /// Key, must be all capital ASCII characters, digits, and underscores
