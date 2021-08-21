@@ -1,10 +1,13 @@
 mod cli;
 mod config;
 mod exec;
+mod key_value;
 mod mask;
 
 use anyhow::*;
 use exec::CommandExecExt;
+
+use crate::key_value::KeyValue;
 
 fn main() -> Result<()> {
     let cmd = cli::init();
@@ -14,7 +17,7 @@ fn main() -> Result<()> {
         cli::SubCommand::Encrypt { key, value } => encrypt(cmd.opt, key, value),
         cli::SubCommand::Generate { key } => generate(cmd.opt, key),
         cli::SubCommand::Remove { key } => remove(cmd.opt, key),
-        cli::SubCommand::Print => print(cmd.opt),
+        cli::SubCommand::Print { style } => print(cmd.opt, style),
         cli::SubCommand::Exec { cmd: cmd_, args } => exec(cmd.opt, cmd_, args),
     }
 }
@@ -73,15 +76,31 @@ fn remove(opt: cli::Opt, key: String) -> Result<()> {
     config.save(&opt.amber_yaml)
 }
 
-fn print(opt: cli::Opt) -> Result<()> {
+fn print(opt: cli::Opt, style: cli::PrintStyle) -> Result<()> {
     let config = config::Config::load(&opt.amber_yaml)?;
     let secret = config.load_secret_key()?;
     let pairs: Result<Vec<_>> = config.iter_secrets(&secret).collect();
     let mut pairs = pairs?;
     pairs.sort_by(|x, y| x.0.cmp(y.0));
-    pairs
-        .iter()
-        .for_each(|(key, value)| println!("export {}={:?}", key, value));
+
+    fn to_objs<'a>(p: &'a [(&String, String)]) -> Vec<KeyValue<'a, String, String>> {
+        p.iter()
+            .map(|(k, v)| KeyValue::from((*k, v)))
+            .collect::<Vec<_>>()
+    }
+    match style {
+        cli::PrintStyle::SetEnv => pairs
+            .iter()
+            .for_each(|(key, value)| println!("export {}={:?}", key, value)),
+        cli::PrintStyle::Json => {
+            let secrets = to_objs(&pairs);
+            serde_json::to_writer(std::io::stdout(), &secrets)?;
+        }
+        cli::PrintStyle::Yaml => {
+            let secrets = to_objs(&pairs);
+            serde_yaml::to_writer(std::io::stdout(), &secrets)?;
+        }
+    }
 
     Ok(())
 }
