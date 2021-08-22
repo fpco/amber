@@ -1,6 +1,11 @@
 use anyhow::*;
+use std::path::Path;
 use vergen::{vergen, Config};
 
 fn main() -> Result<()> {
-    vergen(Config::default())
+    if Path::new(".git").exists() {
+        vergen(Config::default())
+    } else {
+        Ok(())
+    }
 }
