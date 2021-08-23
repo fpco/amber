@@ -51,11 +51,11 @@ pub enum SubCommand {
 }
 
 static VERSION_SHA: Lazy<String> = Lazy::new(|| {
-    format!(
-        "{} (Git SHA1 {})",
-        env!("CARGO_PKG_VERSION"),
-        env!("VERGEN_GIT_SHA")
-    )
+    let pkgver = env!("CARGO_PKG_VERSION");
+    match option_env!("VERGEN_GIT_SHA") {
+        None => pkgver.to_owned(),
+        Some(gitsha) => format!("{} (Git SHA1 {})", pkgver, gitsha),
+    }
 });
 
 /// Utility to store encrypted secrets in version trackable plain text files.
