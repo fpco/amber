@@ -42,7 +42,7 @@ pub enum SubCommand {
     /// Print all of the secrets
     Print {
         /// Secrets output style, possible values are: setenv, json, yaml, pure. The default is setenv.
-        #[clap(default_value = "setenv")]
+        #[clap(long = "--style", default_value = "setenv")]
         style: PrintStyle,
     },
     /// Run a command with all of the secrets set as environment variables
