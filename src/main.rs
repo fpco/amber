@@ -1,13 +1,30 @@
 mod cli;
 mod config;
 mod exec;
-mod key_value;
 mod mask;
 
 use anyhow::*;
 use exec::CommandExecExt;
+use serde::Serialize;
 
-use crate::key_value::KeyValue;
+#[derive(Serialize)]
+struct KeyValue<'a> {
+    key: &'a str,
+    value: &'a str,
+}
+
+impl<'a, K, V> From<&'a (K, V)> for KeyValue<'a>
+where
+    K: AsRef<str>,
+    V: AsRef<str>,
+{
+    fn from((key, value): &'a (K, V)) -> Self {
+        KeyValue {
+            key: key.as_ref(),
+            value: value.as_ref(),
+        }
+    }
+}
 
 fn main() -> Result<()> {
     let cmd = cli::init();
@@ -83,10 +100,13 @@ fn print(opt: cli::Opt, style: cli::PrintStyle) -> Result<()> {
     let mut pairs = pairs?;
     pairs.sort_by(|x, y| x.0.cmp(y.0));
 
-    fn to_objs<'a>(p: &'a [(&String, String)]) -> Vec<KeyValue<'a, String, String>> {
-        p.iter()
-            .map(|(k, v)| KeyValue::from((*k, v)))
-            .collect::<Vec<_>>()
+    fn to_objs<'a, K, V, I>(p: I) -> Vec<KeyValue<'a>>
+    where
+        I: IntoIterator<Item = &'a (K, V)>,
+        K: AsRef<str> + 'a,
+        V: AsRef<str> + 'a,
+    {
+        p.into_iter().map(KeyValue::from).collect::<Vec<_>>()
     }
     match style {
         cli::PrintStyle::SetEnv => pairs
