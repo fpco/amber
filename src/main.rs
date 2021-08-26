@@ -5,6 +5,26 @@ mod mask;
 
 use anyhow::*;
 use exec::CommandExecExt;
+use serde::Serialize;
+
+#[derive(Serialize)]
+struct KeyValue<'a> {
+    key: &'a str,
+    value: &'a str,
+}
+
+impl<'a, K, V> From<&'a (K, V)> for KeyValue<'a>
+where
+    K: AsRef<str>,
+    V: AsRef<str>,
+{
+    fn from((key, value): &'a (K, V)) -> Self {
+        KeyValue {
+            key: key.as_ref(),
+            value: value.as_ref(),
+        }
+    }
+}
 
 fn main() -> Result<()> {
     let cmd = cli::init();
@@ -14,7 +34,7 @@ fn main() -> Result<()> {
         cli::SubCommand::Encrypt { key, value } => encrypt(cmd.opt, key, value),
         cli::SubCommand::Generate { key } => generate(cmd.opt, key),
         cli::SubCommand::Remove { key } => remove(cmd.opt, key),
-        cli::SubCommand::Print => print(cmd.opt),
+        cli::SubCommand::Print { style } => print(cmd.opt, style),
         cli::SubCommand::Exec { cmd: cmd_, args } => exec(cmd.opt, cmd_, args),
     }
 }
@@ -73,15 +93,34 @@ fn remove(opt: cli::Opt, key: String) -> Result<()> {
     config.save(&opt.amber_yaml)
 }
 
-fn print(opt: cli::Opt) -> Result<()> {
+fn print(opt: cli::Opt, style: cli::PrintStyle) -> Result<()> {
     let config = config::Config::load(&opt.amber_yaml)?;
     let secret = config.load_secret_key()?;
     let pairs: Result<Vec<_>> = config.iter_secrets(&secret).collect();
     let mut pairs = pairs?;
     pairs.sort_by(|x, y| x.0.cmp(y.0));
-    pairs
-        .iter()
-        .for_each(|(key, value)| println!("export {}={:?}", key, value));
+
+    fn to_objs<'a, K, V, I>(p: I) -> Vec<KeyValue<'a>>
+    where
+        I: IntoIterator<Item = &'a (K, V)>,
+        K: AsRef<str> + 'a,
+        V: AsRef<str> + 'a,
+    {
+        p.into_iter().map(KeyValue::from).collect::<Vec<_>>()
+    }
+    match style {
+        cli::PrintStyle::SetEnv => pairs
+            .iter()
+            .for_each(|(key, value)| println!("export {}={:?}", key, value)),
+        cli::PrintStyle::Json => {
+            let secrets = to_objs(&pairs);
+            serde_json::to_writer(std::io::stdout(), &secrets)?;
+        }
+        cli::PrintStyle::Yaml => {
+            let secrets = to_objs(&pairs);
+            serde_yaml::to_writer(std::io::stdout(), &secrets)?;
+        }
+    }
 
     Ok(())
 }

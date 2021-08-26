@@ -40,7 +40,11 @@ pub enum SubCommand {
         key: String,
     },
     /// Print all of the secrets
-    Print,
+    Print {
+        /// Secrets output style, possible values are: setenv, json, yaml, pure. The default is setenv.
+        #[clap(long, default_value = "setenv")]
+        style: PrintStyle,
+    },
     /// Run a command with all of the secrets set as environment variables
     Exec {
         /// Command to run
@@ -48,6 +52,32 @@ pub enum SubCommand {
         /// Command line arguments to pass to the command
         args: Vec<String>,
     },
+}
+
+#[derive(Clap, Debug)]
+pub enum PrintStyle {
+    /// Output with `export` prefix, can be evaled in shell.
+    SetEnv,
+    /// Output as object with `key` and `value` attributes.
+    Json,
+    /// Output as object with `key` and `value` attributes.
+    Yaml,
+}
+
+impl core::str::FromStr for PrintStyle {
+    type Err = clap::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "setenv" => Ok(PrintStyle::SetEnv),
+            "json" => Ok(PrintStyle::Json),
+            "yaml" => Ok(PrintStyle::Yaml),
+            _ => Err(clap::Error::with_description(
+                String::from("Invalid option for Print command"),
+                clap::ErrorKind::InvalidValue,
+            )),
+        }
+    }
 }
 
 static VERSION_SHA: Lazy<String> = Lazy::new(|| {
