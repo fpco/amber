@@ -7,6 +7,8 @@
 * Do `vergen` initialization only when `.git` directory is
   present. This makes amber easy to package for distributions like
   NixOS.
+* Rework print subcommand to provide more output styles.
+  [#11](https://github.com/fpco/amber/pull/11)
 
 ## 0.1.0 (2021-08)
 
