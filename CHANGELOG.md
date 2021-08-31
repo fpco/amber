@@ -1,6 +1,6 @@
 # Change log for Amber
 
-## 0.1.1 (UNRELEASED)
+## 0.1.1 (2021-08-31)
 
 * Add masking support [#1](https://github.com/fpco/amber/issues/1)
 * Add subcommand `generate` [#7](https://github.com/fpco/amber/pull/7)
