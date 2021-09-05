@@ -1,6 +1,6 @@
 [package]
 name = "amber"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Michael Snoyman <michael@snoyman.com>"]
 edition = "2018"
 description = "Manage secret values in-repo via public key cryptography"
@@ -27,6 +27,9 @@ sodiumoxide = "0.2.7"
 [build-dependencies]
 anyhow = "1"
 vergen = { version = "5.1.1", default-features = false, features = ["git"] }
+
+[dev-dependencies]
+tempfile = "3"
 
 [profile.release]
 panic = "abort"
