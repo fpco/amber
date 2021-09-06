@@ -26,8 +26,8 @@ pub enum SubCommand {
     Encrypt {
         /// Key, must be all capital ASCII characters, digits, and underscores
         key: String,
-        /// Value
-        value: String,
+        /// Value. If omitted, read from stdin
+        value: Option<String>,
     },
     /// Generate a new strong secret value, and add it to the repository
     Generate {

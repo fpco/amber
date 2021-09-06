@@ -3,6 +3,8 @@ mod config;
 mod exec;
 mod mask;
 
+use std::io::Read;
+
 use anyhow::*;
 use exec::CommandExecExt;
 use serde::Serialize;
@@ -70,9 +72,21 @@ fn validate_key(key: &str) -> Result<()> {
     }
 }
 
-fn encrypt(opt: cli::Opt, key: String, value: String) -> Result<()> {
+fn encrypt(opt: cli::Opt, key: String, value: Option<String>) -> Result<()> {
     validate_key(&key)?;
     let mut config = config::Config::load(&opt.amber_yaml)?;
+    let value = value.map_or_else(
+        || {
+            log::debug!("No value provided on command line, taking from stdin");
+            eprintln!("Enter secret value (send EOF when done)");
+            eprintln!();
+            let stdin = std::io::stdin();
+            let mut stdin = stdin.lock();
+            let mut buffer = String::new();
+            stdin.read_to_string(&mut buffer).map(|_size| buffer)
+        },
+        Ok,
+    )?;
     config.encrypt(key, &value);
     config.save(&opt.amber_yaml)
 }
@@ -81,7 +95,7 @@ fn generate(opt: cli::Opt, key: String) -> Result<()> {
     let value = sodiumoxide::randombytes::randombytes(16);
     let value = sodiumoxide::base64::encode(value, sodiumoxide::base64::Variant::UrlSafe);
     let msg = format!("Your new secret value is {}: {}", key, value);
-    let res = encrypt(opt, key, value)?;
+    let res = encrypt(opt, key, Some(value))?;
     println!("{}", &msg);
     Ok(res)
 }

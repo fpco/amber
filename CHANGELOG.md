@@ -1,5 +1,9 @@
 # Change log for Amber
 
+## 0.1.2 (UNRELEASED)
+
+* Allow `encrypt` subcommand to take secret value from `stdin` [#15](https://github.com/fpco/amber/issues/15)
+
 ## 0.1.1 (2021-08-31)
 
 * Add masking support [#1](https://github.com/fpco/amber/issues/1)
