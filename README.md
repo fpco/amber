@@ -10,7 +10,17 @@ The primary use case for Amber is storing secret values for Continuous Integrati
 
 ## Install
 
-You can install from source by [installing Rust](https://www.rust-lang.org/tools/install) and running `cargo install --git https://github.com/fpco/amber`. Binaries are available on the [release page](https://github.com/fpco/amber/releases). Place the executable on your `PATH` and ensure that the executable bit is set (for non-Windows platforms).
+See below for OS specific packages. Alternatively, you can install from source by [installing Rust](https://www.rust-lang.org/tools/install) and running `cargo install --git https://github.com/fpco/amber`. Binaries are available on the [release page](https://github.com/fpco/amber/releases). Place the executable on your `PATH` and ensure that the executable bit is set (for non-Windows platforms).
+
+### Arch Linux
+
+There is a [AUR package available for Amber](https://aur.archlinux.org/packages/amber-secrets/). Install with `makepkg` or your preferred helper:
+
+```
+git clone https://aur.archlinux.org/amber-secrets.git
+cd amber-secrets
+makepkg -si
+```
 
 ## Usage
 
