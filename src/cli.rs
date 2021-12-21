@@ -88,6 +88,8 @@ static VERSION_SHA: Lazy<String> = Lazy::new(|| {
     }
 });
 
+pub(crate) const DEFAULT_AMBER_YAML: &str = "amber.yaml";
+
 /// Utility to store encrypted secrets in version trackable plain text files.
 #[derive(Clap, Debug)]
 pub struct Opt {
@@ -95,7 +97,7 @@ pub struct Opt {
     #[clap(short, long, global = true)]
     pub verbose: bool,
     /// amber.yaml file location
-    #[clap(long, default_value = "amber.yaml", global = true, env = "AMBER_YAML")]
+    #[clap(long, default_value = DEFAULT_AMBER_YAML, global = true, env = "AMBER_YAML")]
     pub amber_yaml: PathBuf,
     /// Disable masking of secret values during exec
     #[clap(long, global = true)]

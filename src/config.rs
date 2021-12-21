@@ -1,4 +1,4 @@
-use std::{collections::HashMap, path::Path};
+use std::{collections::HashMap, path::Path, path::PathBuf};
 
 use anyhow::*;
 use serde::{Deserialize, Serialize};
@@ -121,13 +121,17 @@ impl Config {
     }
 
     pub fn load<P: AsRef<Path>>(path: P) -> Result<Self> {
-        let path = path.as_ref();
+        let path: PathBuf = path.as_ref().into();
+        let new_path = if path == PathBuf::from(crate::cli::DEFAULT_AMBER_YAML) {
+            find_amber_yaml(&path)
+        } else { Ok(path) };
+        let load_path = new_path?;
         let res: Result<Self> = (|| {
-            let mut file = fs_err::File::open(path)?;
+            let mut file = fs_err::File::open(&load_path)?;
             let config = serde_yaml::from_reader(&mut file)?;
             Config::from_raw(config)
         })();
-        res.with_context(|| format!("Unable to read file {}", path.display()))
+        res.with_context(|| format!("Unable to read file {}", load_path.display()))
     }
 
     pub fn save<P: AsRef<Path>>(&self, path: P) -> Result<()> {
@@ -238,4 +242,19 @@ impl Secret {
         })()
         .with_context(|| format!("Error while decrypting secret named {}", key))
     }
+}
+
+fn find_amber_yaml<P: AsRef<Path>>(name: P) -> Result<PathBuf> {
+    if name.as_ref().is_file() {
+        return Ok(name.as_ref().to_path_buf());
+    }
+    let path = std::env::current_dir()?;
+    for file in path.ancestors() {
+        let amber_yaml: PathBuf = file.join(&name);
+        log::debug!("Checking if file {:?} exists", &amber_yaml);
+        if amber_yaml.exists() {
+            return Ok(amber_yaml);
+        }
+    }
+    bail!("No file named {} found", &name.as_ref().display())
 }
