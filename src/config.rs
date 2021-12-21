@@ -124,7 +124,9 @@ impl Config {
         let path: PathBuf = path.as_ref().into();
         let new_path = if path == PathBuf::from(crate::cli::DEFAULT_AMBER_YAML) {
             find_amber_yaml(&path)
-        } else { Ok(path) };
+        } else {
+            Ok(path)
+        };
         let load_path = new_path?;
         let res: Result<Self> = (|| {
             let mut file = fs_err::File::open(&load_path)?;
