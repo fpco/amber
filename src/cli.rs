@@ -1,5 +1,6 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
+use anyhow::*;
 use clap::Clap;
 use once_cell::sync::Lazy;
 
@@ -88,6 +89,8 @@ static VERSION_SHA: Lazy<String> = Lazy::new(|| {
     }
 });
 
+const DEFAULT_AMBER_YAML: &str = "amber.yaml";
+
 /// Utility to store encrypted secrets in version trackable plain text files.
 #[derive(Clap, Debug)]
 pub struct Opt {
@@ -95,8 +98,8 @@ pub struct Opt {
     #[clap(short, long, global = true)]
     pub verbose: bool,
     /// amber.yaml file location
-    #[clap(long, default_value = "amber.yaml", global = true, env = "AMBER_YAML")]
-    pub amber_yaml: PathBuf,
+    #[clap(long, global = true, env = "AMBER_YAML")]
+    pub amber_yaml: Option<PathBuf>,
     /// Disable masking of secret values during exec
     #[clap(long, global = true)]
     pub unmasked: bool,
@@ -111,5 +114,26 @@ impl Opt {
         let level = if self.verbose { Debug } else { Info };
         builder.filter_module(env!("CARGO_CRATE_NAME"), level);
         builder.target(Target::Stderr).init();
+    }
+
+    pub fn find_amber_yaml(&mut self) -> Result<&Path> {
+        if self.amber_yaml.is_none() {
+            for dir in std::env::current_dir()?.ancestors() {
+                let amber_yaml: PathBuf = dir.join(DEFAULT_AMBER_YAML);
+                log::debug!("Checking if file {:?} exists", &amber_yaml);
+                if amber_yaml.exists() {
+                    self.amber_yaml = Some(amber_yaml);
+                    break;
+                }
+            }
+        }
+        self.amber_yaml
+            .as_deref()
+            .with_context(|| format!("No file named {} found", DEFAULT_AMBER_YAML))
+    }
+
+    pub fn find_amber_yaml_or_default(&mut self) -> &Path {
+        self.amber_yaml
+            .get_or_insert_with(|| Path::new(DEFAULT_AMBER_YAML).to_owned())
     }
 }

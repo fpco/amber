@@ -41,11 +41,11 @@ fn main() -> Result<()> {
     }
 }
 
-fn init(opt: cli::Opt) -> Result<()> {
+fn init(mut opt: cli::Opt) -> Result<()> {
     let (secret_key, config) = config::Config::new();
     let secret_key = sodiumoxide::hex::encode(secret_key);
 
-    config.save(&opt.amber_yaml)?;
+    config.save(opt.find_amber_yaml_or_default())?;
 
     eprintln!("Your secret key is: {}", secret_key);
     eprintln!(
@@ -72,9 +72,10 @@ fn validate_key(key: &str) -> Result<()> {
     }
 }
 
-fn encrypt(opt: cli::Opt, key: String, value: Option<String>) -> Result<()> {
+fn encrypt(mut opt: cli::Opt, key: String, value: Option<String>) -> Result<()> {
     validate_key(&key)?;
-    let mut config = config::Config::load(&opt.amber_yaml)?;
+    let amber_yaml = opt.find_amber_yaml()?;
+    let mut config = config::Config::load(amber_yaml)?;
     let value = value.map_or_else(
         || {
             log::debug!("No value provided on command line, taking from stdin");
@@ -88,7 +89,7 @@ fn encrypt(opt: cli::Opt, key: String, value: Option<String>) -> Result<()> {
         Ok,
     )?;
     config.encrypt(key, &value);
-    config.save(&opt.amber_yaml)
+    config.save(amber_yaml)
 }
 
 fn generate(opt: cli::Opt, key: String) -> Result<()> {
@@ -100,15 +101,16 @@ fn generate(opt: cli::Opt, key: String) -> Result<()> {
     Ok(res)
 }
 
-fn remove(opt: cli::Opt, key: String) -> Result<()> {
+fn remove(mut opt: cli::Opt, key: String) -> Result<()> {
     validate_key(&key)?;
-    let mut config = config::Config::load(&opt.amber_yaml)?;
+    let amber_yaml = opt.find_amber_yaml()?;
+    let mut config = config::Config::load(amber_yaml)?;
     config.remove(&key);
-    config.save(&opt.amber_yaml)
+    config.save(amber_yaml)
 }
 
-fn print(opt: cli::Opt, style: cli::PrintStyle) -> Result<()> {
-    let config = config::Config::load(&opt.amber_yaml)?;
+fn print(mut opt: cli::Opt, style: cli::PrintStyle) -> Result<()> {
+    let config = config::Config::load(opt.find_amber_yaml()?)?;
     let secret = config.load_secret_key()?;
     let pairs: Result<Vec<_>> = config.iter_secrets(&secret).collect();
     let mut pairs = pairs?;
@@ -139,8 +141,8 @@ fn print(opt: cli::Opt, style: cli::PrintStyle) -> Result<()> {
     Ok(())
 }
 
-fn exec(opt: cli::Opt, cmd: String, args: Vec<String>) -> Result<()> {
-    let config = config::Config::load(&opt.amber_yaml)?;
+fn exec(mut opt: cli::Opt, cmd: String, args: Vec<String>) -> Result<()> {
+    let config = config::Config::load(opt.find_amber_yaml()?)?;
     let secret_key = config.load_secret_key()?;
 
     let mut cmd = std::process::Command::new(cmd);

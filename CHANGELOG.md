@@ -3,6 +3,11 @@
 ## 0.1.2 (UNRELEASED)
 
 * Allow `encrypt` subcommand to take secret value from `stdin` [#15](https://github.com/fpco/amber/issues/15)
+* Amber searches the parent directory for the amber.yaml file if
+  amber.yaml isn't present in the current working directory. This
+  check is only done when no explicit amber-yaml is specificed (unless
+  the specified amber yaml itself is amber.yaml which is the default
+  value)
 
 ## 0.1.1 (2021-08-31)
 
