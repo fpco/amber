@@ -133,10 +133,7 @@ impl Opt {
     }
 
     pub fn find_amber_yaml_or_default(&mut self) -> &Path {
-        if self.amber_yaml.is_none() {
-            self.amber_yaml = Some(Path::new(DEFAULT_AMBER_YAML).to_owned());
-        }
-
-        self.amber_yaml.as_deref().unwrap()
+        self.amber_yaml
+            .get_or_insert_with(|| Path::new(DEFAULT_AMBER_YAML).to_owned())
     }
 }
