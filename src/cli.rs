@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use anyhow::*;
-use clap::Clap;
+use clap::{Parser, Subcommand};
 use once_cell::sync::Lazy;
 
 pub fn init() -> Cmd {
@@ -10,7 +10,7 @@ pub fn init() -> Cmd {
     cmd
 }
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 #[clap(version = VERSION_SHA.as_str())]
 pub struct Cmd {
     #[clap(flatten)]
@@ -19,7 +19,7 @@ pub struct Cmd {
     pub sub: SubCommand,
 }
 
-#[derive(Clap, Debug)]
+#[derive(Subcommand, Debug)]
 pub enum SubCommand {
     /// Initialize a new directory
     Init,
@@ -55,7 +55,7 @@ pub enum SubCommand {
     },
 }
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub enum PrintStyle {
     /// Output with `export` prefix, can be evaled in shell.
     SetEnv,
@@ -66,17 +66,14 @@ pub enum PrintStyle {
 }
 
 impl core::str::FromStr for PrintStyle {
-    type Err = clap::Error;
+    type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "setenv" => Ok(PrintStyle::SetEnv),
             "json" => Ok(PrintStyle::Json),
             "yaml" => Ok(PrintStyle::Yaml),
-            _ => Err(clap::Error::with_description(
-                String::from("Invalid option for Print command"),
-                clap::ErrorKind::InvalidValue,
-            )),
+            _ => Err(anyhow!("Invalid option for Print command")),
         }
     }
 }
@@ -92,7 +89,7 @@ static VERSION_SHA: Lazy<String> = Lazy::new(|| {
 const DEFAULT_AMBER_YAML: &str = "amber.yaml";
 
 /// Utility to store encrypted secrets in version trackable plain text files.
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub struct Opt {
     /// Turn on verbose output
     #[clap(short, long, global = true)]
