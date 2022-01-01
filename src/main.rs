@@ -33,8 +33,8 @@ fn main() -> Result<()> {
     log::debug!("{:?}", cmd);
     match cmd.sub {
         cli::SubCommand::Init => init(cmd.opt),
-        cli::SubCommand::Encrypt { key, value } => encrypt(cmd.opt, key, value),
-        cli::SubCommand::Generate { key } => generate(cmd.opt, key),
+        cli::SubCommand::Encrypt { environment, key, value } => encrypt(cmd.opt, environment, key, value),
+        cli::SubCommand::Generate { environment, key } => generate(cmd.opt, environment, key),
         cli::SubCommand::Remove { key } => remove(cmd.opt, key),
         cli::SubCommand::Print { style } => print(cmd.opt, style),
         cli::SubCommand::Exec { cmd: cmd_, args } => exec(cmd.opt, cmd_, args),
@@ -72,7 +72,7 @@ fn validate_key(key: &str) -> Result<()> {
     }
 }
 
-fn encrypt(mut opt: cli::Opt, key: String, value: Option<String>) -> Result<()> {
+fn encrypt(mut opt: cli::Opt, environment: String, key: String, value: Option<String>) -> Result<()> {
     validate_key(&key)?;
     let amber_yaml = opt.find_amber_yaml()?;
     let mut config = config::Config::load(amber_yaml)?;
@@ -91,15 +91,15 @@ fn encrypt(mut opt: cli::Opt, key: String, value: Option<String>) -> Result<()> 
         },
         Ok,
     )?;
-    config.encrypt(key, &value);
+    config.encrypt(environment, key, &value);
     config.save(amber_yaml)
 }
 
-fn generate(opt: cli::Opt, key: String) -> Result<()> {
+fn generate(opt: cli::Opt, environment: String, key: String) -> Result<()> {
     let value = sodiumoxide::randombytes::randombytes(16);
     let value = sodiumoxide::base64::encode(value, sodiumoxide::base64::Variant::UrlSafe);
     let msg = format!("Your new secret value is {}: {}", key, value);
-    let res = encrypt(opt, key, Some(value))?;
+    let res = encrypt(opt, environment, key, Some(value))?;
     println!("{}", &msg);
     Ok(res)
 }

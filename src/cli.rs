@@ -25,6 +25,8 @@ pub enum SubCommand {
     Init,
     /// Add or update a secret
     Encrypt {
+        /// Environment, must be ASCII characters
+        environment: String,
         /// Key, must be all capital ASCII characters, digits, and underscores
         key: String,
         /// Value. If omitted, read from stdin
@@ -32,6 +34,7 @@ pub enum SubCommand {
     },
     /// Generate a new strong secret value, and add it to the repository
     Generate {
+        environment: String,
         /// Key, must be all capital ASCII characters, digits, and underscores
         key: String,
     },

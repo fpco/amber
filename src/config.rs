@@ -16,7 +16,7 @@ use sodiumoxide::{
 pub const SECRET_KEY_ENV: &str = "AMBER_SECRET";
 
 /// Current version of the file format
-const FILE_FORMAT_VERSION: u32 = 1;
+const FILE_FORMAT_VERSION: u32 = 2;
 
 /// Raw version of [Config], the thing actually serialized/deserialized
 #[derive(Serialize, Deserialize, Debug)]
@@ -37,6 +37,7 @@ struct ConfigRaw {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
 struct SecretRaw {
+    environment: String,
     name: String,
     sha256: String,
     cipher: String,
@@ -143,7 +144,7 @@ impl Config {
     }
 
     /// Encrypt a new value, replacing as necessary
-    pub fn encrypt(&mut self, key: String, value: &str) {
+    pub fn encrypt(&mut self, environment: String, key: String, value: &str) {
         let hash = sha256::hash(value.as_bytes());
         if let Some(old_secret) = self.secrets.get(&key) {
             if old_secret.sha256 == hash {
@@ -155,6 +156,7 @@ impl Config {
         }
 
         self.secrets.insert(
+            environment,
             key,
             Secret {
                 cipher: sealedbox::seal(value.as_bytes(), &self.public_key),
