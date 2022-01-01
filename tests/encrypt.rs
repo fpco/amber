@@ -1,4 +1,6 @@
+use assert_cmd::prelude::*;
 use std::io::Write;
+use std::process::Command;
 use std::{path::Path, process::Stdio};
 
 const AMBER_YAML: &str = "assets/amber-encrypt.yaml";
@@ -17,9 +19,8 @@ struct Pair {
 }
 
 fn get_vars(path: impl AsRef<Path>) -> Vec<Pair> {
-    let output = std::process::Command::new("cargo")
-        .arg("run")
-        .arg("--")
+    let output = Command::cargo_bin("amber")
+        .unwrap()
         .arg("print")
         .arg("--style")
         .arg("json")
@@ -43,9 +44,8 @@ fn empty_file() {
 #[test]
 fn encrypt_cli() {
     let temp = temp_amber_yaml();
-    let status = std::process::Command::new("cargo")
-        .arg("run")
-        .arg("--")
+    let status = Command::cargo_bin("amber")
+        .unwrap()
         .arg("encrypt")
         .arg("FOO")
         .arg("foovalue")
@@ -65,9 +65,8 @@ fn encrypt_cli() {
 #[test]
 fn encrypt_stdin() {
     let temp = temp_amber_yaml();
-    let mut child = std::process::Command::new("cargo")
-        .arg("run")
-        .arg("--")
+    let mut child = Command::cargo_bin("amber")
+        .unwrap()
         .arg("encrypt")
         .arg("FOO")
         .env("AMBER_YAML", temp.as_os_str())

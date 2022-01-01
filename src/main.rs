@@ -84,7 +84,10 @@ fn encrypt(mut opt: cli::Opt, key: String, value: Option<String>) -> Result<()> 
             let stdin = std::io::stdin();
             let mut stdin = stdin.lock();
             let mut buffer = String::new();
-            stdin.read_to_string(&mut buffer).map(|_size| buffer)
+            stdin
+                .read_to_string(&mut buffer)
+                .map(|_size| buffer)
+                .map_err(anyhow::Error::new)
         },
         Ok,
     )?;

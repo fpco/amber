@@ -1,3 +1,6 @@
+use assert_cmd::prelude::*;
+use std::process::Command;
+
 const AMBER_YAML: &str = "assets/amber-masking.yaml";
 const SECRET_KEY: &str = "ac2af4852f3de2dc6feb19b718d1cbf6c64c1ef618dafaf2b0a89cadcde240ac";
 const TO_MASK: &str = include_str!("../assets/tomask.txt");
@@ -5,9 +8,8 @@ const MASKED: &str = include_str!("../assets/masked.txt");
 
 #[test]
 fn masking() {
-    let output = std::process::Command::new("cargo")
-        .arg("run")
-        .arg("--")
+    let output = Command::cargo_bin("amber")
+        .unwrap()
         .arg("exec")
         .arg("cat")
         .arg("assets/tomask.txt")
@@ -24,9 +26,8 @@ fn masking() {
 
 #[test]
 fn disable_masking() {
-    let output = std::process::Command::new("cargo")
-        .arg("run")
-        .arg("--")
+    let output = Command::cargo_bin("amber")
+        .unwrap()
         .arg("exec")
         .arg("--unmasked")
         .arg("cat")
