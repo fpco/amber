@@ -1,6 +1,6 @@
 # Change log for Amber
 
-## 0.1.2 (UNRELEASED)
+## 0.1.2 (2022-01-18)
 
 * Allow `encrypt` subcommand to take secret value from `stdin` [#15](https://github.com/fpco/amber/issues/15)
 * Amber searches the parent directory for the amber.yaml file if
