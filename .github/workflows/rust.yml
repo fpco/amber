@@ -21,7 +21,7 @@ jobs:
         - windows-latest
 
         toolchain:
-        - 1.54.0
+        - 1.59.0
         - stable
         - nightly
 
@@ -52,13 +52,13 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions-rs/toolchain@v1
       with:
-        toolchain: 1.54.0
+        toolchain: 1.59.0
         target: x86_64-unknown-linux-musl
         profile: minimal
         override: true
     - uses: Swatinem/rust-cache@v1
       with:
-        key: ${{ runner.os }}-${{ hashFiles('Cargo.lock') }}-1.54.0-binary
+        key: ${{ runner.os }}-${{ hashFiles('Cargo.lock') }}-1.59.0-binary
     - name: Install musl tools
       run: sudo apt-get install -y musl-tools
     - name: Build
@@ -81,12 +81,12 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions-rs/toolchain@v1
       with:
-        toolchain: 1.54.0
+        toolchain: 1.59.0
         profile: minimal
         override: true
     - uses: Swatinem/rust-cache@v1
       with:
-        key: ${{ runner.os }}-${{ hashFiles('Cargo.lock') }}-1.54.0-binary
+        key: ${{ runner.os }}-${{ hashFiles('Cargo.lock') }}-1.59.0-binary
     - name: Build
       run: cargo build --release
     - name: Rename
@@ -105,12 +105,12 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions-rs/toolchain@v1
       with:
-        toolchain: 1.54.0
+        toolchain: 1.59.0
         profile: minimal
         override: true
     - uses: Swatinem/rust-cache@v1
       with:
-        key: ${{ runner.os }}-${{ hashFiles('Cargo.lock') }}-1.54.0-binary
+        key: ${{ runner.os }}-${{ hashFiles('Cargo.lock') }}-1.59.0-binary
     - name: Build
       run: cargo build --release
     - name: Rename
