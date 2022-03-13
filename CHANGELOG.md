@@ -1,5 +1,9 @@
 # Change log for Amber
 
+## 0.1.3 (2022-03-13)
+
+* Add the `write-file` command
+
 ## 0.1.2 (2022-01-18)
 
 * Allow `encrypt` subcommand to take secret value from `stdin` [#15](https://github.com/fpco/amber/issues/15)

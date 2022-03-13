@@ -53,6 +53,15 @@ pub enum SubCommand {
         /// Command line arguments to pass to the command
         args: Vec<String>,
     },
+    /// Write the contents of a secret to the given file.
+    WriteFile {
+        /// The key for the secret
+        #[clap(long)]
+        key: String,
+        /// File path to write to
+        #[clap(long)]
+        dest: PathBuf,
+    },
 }
 
 #[derive(Parser, Debug)]

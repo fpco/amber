@@ -203,6 +203,14 @@ impl Config {
                 .map(|plain| (key, plain))
         })
     }
+
+    /// Look up a specific secret value
+    pub(crate) fn get_secret(&self, key: &str, secret_key: &SecretKey) -> Result<String> {
+        self.secrets
+            .get(key)
+            .with_context(|| format!("Key does not exist: {}", key))
+            .and_then(|secret| secret.decrypt(&self.public_key, secret_key, key))
+    }
 }
 
 impl Secret {
