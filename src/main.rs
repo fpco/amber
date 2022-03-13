@@ -3,7 +3,7 @@ mod config;
 mod exec;
 mod mask;
 
-use std::io::Read;
+use std::{io::Read, path::Path};
 
 use anyhow::*;
 use exec::CommandExecExt;
@@ -38,6 +38,7 @@ fn main() -> Result<()> {
         cli::SubCommand::Remove { key } => remove(cmd.opt, key),
         cli::SubCommand::Print { style } => print(cmd.opt, style),
         cli::SubCommand::Exec { cmd: cmd_, args } => exec(cmd.opt, cmd_, args),
+        cli::SubCommand::WriteFile { key, dest } => write_file(cmd.opt, &key, &dest),
     }
 }
 
@@ -168,4 +169,12 @@ fn exec(mut opt: cli::Opt, cmd: String, args: Vec<String>) -> Result<()> {
     }
 
     Ok(())
+}
+
+fn write_file(mut opt: cli::Opt, key: &str, dest: &Path) -> Result<()> {
+    let config = config::Config::load(opt.find_amber_yaml()?)?;
+    let secret_key = config.load_secret_key()?;
+    let value = config.get_secret(key, &secret_key)?;
+    std::fs::write(dest, value)
+        .with_context(|| format!("Unable to write to file {}", dest.display()))
 }
