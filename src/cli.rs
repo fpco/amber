@@ -109,6 +109,9 @@ pub struct Opt {
     /// Disable masking of secret values during exec
     #[clap(long, global = true)]
     pub unmasked: bool,
+    /// Display only secret key when exec amber init
+    #[clap(long, global = true)]
+    pub only_secret_key: bool,
 }
 
 impl Opt {
