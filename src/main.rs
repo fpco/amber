@@ -42,14 +42,14 @@ fn main() -> Result<()> {
     }
 }
 
-fn init(mut opt: cli::Opt) -> Result<()> {
+fn init(mut opt: cli::Opt, only_secret_key: bool) -> Result<()> {
     let (secret_key, config) = config::Config::new();
     let secret_key = sodiumoxide::hex::encode(secret_key);
 
     config.save(opt.find_amber_yaml_or_default())?;
 
     if opt.only_secret_key {
-        println!("{}", secret_key);
+        print!("{}", secret_key);
     } else {
         eprintln!("Your secret key is: {}", secret_key);
         eprintln!(
