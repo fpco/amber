@@ -22,7 +22,11 @@ pub struct Cmd {
 #[derive(Subcommand, Debug)]
 pub enum SubCommand {
     /// Initialize a new directory
-    Init,
+    Init {
+        /// Display only secret key
+        #[clap(long, global = true)]
+        only_secret_key: bool,
+    },
     /// Add or update a secret
     Encrypt {
         /// Key, must be all capital ASCII characters, digits, and underscores
@@ -109,9 +113,6 @@ pub struct Opt {
     /// Disable masking of secret values during exec
     #[clap(long, global = true)]
     pub unmasked: bool,
-    /// Display only secret key when exec amber init
-    #[clap(long, global = true)]
-    pub only_secret_key: bool,
 }
 
 impl Opt {
