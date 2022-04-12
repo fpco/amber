@@ -22,7 +22,11 @@ pub struct Cmd {
 #[derive(Subcommand, Debug)]
 pub enum SubCommand {
     /// Initialize a new directory
-    Init,
+    Init {
+        /// Display only secret key
+        #[clap(long, global = true)]
+        only_secret_key: bool,
+    },
     /// Add or update a secret
     Encrypt {
         /// Key, must be all capital ASCII characters, digits, and underscores

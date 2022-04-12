@@ -1,5 +1,7 @@
 # Change log for Amber
 
+* Add `--only-secret-key` option for `amber init`
+
 ## 0.1.3 (2022-03-13)
 
 * Add the `write-file` command

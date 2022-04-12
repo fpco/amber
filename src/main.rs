@@ -32,7 +32,7 @@ fn main() -> Result<()> {
     let cmd = cli::init();
     log::debug!("{:?}", cmd);
     match cmd.sub {
-        cli::SubCommand::Init => init(cmd.opt),
+        cli::SubCommand::Init { only_secret_key } => init(cmd.opt, only_secret_key),
         cli::SubCommand::Encrypt { key, value } => encrypt(cmd.opt, key, value),
         cli::SubCommand::Generate { key } => generate(cmd.opt, key),
         cli::SubCommand::Remove { key } => remove(cmd.opt, key),
@@ -42,20 +42,23 @@ fn main() -> Result<()> {
     }
 }
 
-fn init(mut opt: cli::Opt) -> Result<()> {
+fn init(mut opt: cli::Opt, only_secret_key: bool) -> Result<()> {
     let (secret_key, config) = config::Config::new();
     let secret_key = sodiumoxide::hex::encode(secret_key);
 
     config.save(opt.find_amber_yaml_or_default())?;
 
-    eprintln!("Your secret key is: {}", secret_key);
-    eprintln!(
-        "Please save this key immediately! If you lose it, you will lose access to your secrets."
-    );
-    eprintln!("Recommendation: keep it in a password manager");
-    eprintln!("If you're using this for CI, please update your CI configuration with a secret environment variable");
-    println!("export {}={}", config::SECRET_KEY_ENV, secret_key);
-
+    if only_secret_key {
+        print!("{}", secret_key);
+    } else {
+        eprintln!("Your secret key is: {}", secret_key);
+        eprintln!(
+            "Please save this key immediately! If you lose it, you will lose access to your secrets."
+        );
+        eprintln!("Recommendation: keep it in a password manager");
+        eprintln!("If you're using this for CI, please update your CI configuration with a secret environment variable");
+        println!("export {}={}", config::SECRET_KEY_ENV, secret_key);
+    }
     Ok(())
 }
 
