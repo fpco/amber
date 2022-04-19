@@ -38,6 +38,29 @@ On non NixOS distribution, you can install it through:
 $ nix-env -iA nixpkgs.amber-secret
 ```
 
+### GitHub actions
+
+For installing and caching `amber`, in GitHub actions workflow you can
+use [psibi/setup-amber](https://github.com/psibi/setup-amber).
+
+Example usage:
+
+``` yaml
+- uses: psibi/setup-amber@v1.0
+  with:
+    amber-version: 'v0.1.3' # Optional version, otherwise latest
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+The [GITHUB_TOKEN](https://docs.github.com/en/actions/security-guides/automatic-token-authentication#about-the-github_token-secret) secret is optional, but is recommended to avoid
+rate limiting. You don't have to set upset up anything specific for it since
+for each workflow run, GitHub automatically populates that token for
+you.
+
+The [amber-demo](https://github.com/psibi/amber-demo) repository has an example workflow showcasing the
+usage of this GitHub action.
+
 ## Usage
 
 Running `amber --help` will give you full, up to date set of instructions. The `--amber-yaml` option, or the `AMBER_YAML` environment variable, can be used to specify the location of the file containing your secret values. If unspecified, it will default to `amber.yaml`. The typical workflow is:
