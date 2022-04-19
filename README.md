@@ -54,7 +54,7 @@ Example usage:
 ```
 
 The [GITHUB_TOKEN](https://docs.github.com/en/actions/security-guides/automatic-token-authentication#about-the-github_token-secret) secret is optional, but is recommended to avoid
-rate limiting. You don't have to set upset up anything specific for it since
+rate limiting. You don't have to set up anything specific for it since
 for each workflow run, GitHub automatically populates that token for
 you.
 
