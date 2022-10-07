@@ -103,9 +103,9 @@ fn generate(opt: cli::Opt, key: String) -> Result<()> {
     let value = sodiumoxide::randombytes::randombytes(16);
     let value = sodiumoxide::base64::encode(value, sodiumoxide::base64::Variant::UrlSafe);
     let msg = format!("Your new secret value is {}: {}", key, value);
-    let res = encrypt(opt, key, Some(value))?;
+    encrypt(opt, key, Some(value))?;
     println!("{}", &msg);
-    Ok(res)
+    Ok(())
 }
 
 fn remove(mut opt: cli::Opt, key: String) -> Result<()> {
