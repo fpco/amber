@@ -1,5 +1,8 @@
 # Change log for Amber
 
+## 0.1.4 (Unreleased)
+
+* Upgrade to clap v4
 * Add `--only-secret-key` option for `amber init`
 
 ## 0.1.3 (2022-03-13)
