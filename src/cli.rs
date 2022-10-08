@@ -68,7 +68,7 @@ pub enum SubCommand {
     },
 }
 
-#[derive(Parser, Debug)]
+#[derive(Parser, Clone, Debug)]
 pub enum PrintStyle {
     /// Output with `export` prefix, can be evaled in shell.
     SetEnv,

@@ -108,7 +108,7 @@ impl Config {
             .iter()
             .map(|(key, value)| SecretRaw {
                 name: key.clone(),
-                sha256: hex::encode(&value.sha256),
+                sha256: hex::encode(value.sha256),
                 cipher: hex::encode(&value.cipher),
             })
             .collect();

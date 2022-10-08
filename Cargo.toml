@@ -12,25 +12,30 @@ keywords = ["continuous-integration", "secrets", "encryption"]
 categories = ["command-line-utilities"]
 
 [dependencies]
-aho-corasick = "0.7.18"
-anyhow = "1.0.52"
-clap = { version = "3.0.0", features = ["derive", "env"]}
-env_logger = "0.9.0"
-fs-err = "2.6.0"
-log = "0.4.14"
-once_cell = "1.9.0"
-serde = { version = "1.0.132", features = ["derive"] }
-serde_yaml = "0.8.23"
-serde_json = "1.0.73"
+aho-corasick = "0.7.19"
+anyhow = "1.0.65"
+clap = { version = "4.0.10", features = ["derive", "env"] }
+env_logger = "0.9.1"
+fs-err = "2.8.1"
+log = "0.4.17"
+once_cell = "1.15.0"
+serde = { version = "1.0.145", features = ["derive"] }
+serde_yaml = "0.9.13"
+serde_json = "1.0.85"
 sodiumoxide = "0.2.7"
 
 [build-dependencies]
-anyhow = "1.0.52"
-vergen = { version = "6.0.0", default-features = false, features = ["git"] }
+anyhow = "1.0.65"
+vergen = { version = "7.4.2", default-features = false, features = ["git"] }
 
 [dev-dependencies]
-assert_cmd = "2.0.2"
-tempfile = "3.2.0"
+assert_cmd = "2.0.4"
+tempfile = "3.3.0"
+
+[profile.dev]
+# Disabling debug info speeds up builds a bunch,
+# and we don't rely on it for debugging that much.
+debug = 0
 
 [profile.release]
 panic = "abort"
