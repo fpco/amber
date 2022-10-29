@@ -44,7 +44,7 @@ fn main() -> Result<()> {
 
 fn init(mut opt: cli::Opt, only_secret_key: bool) -> Result<()> {
     let (secret_key, config) = config::Config::new();
-    let secret_key = sodiumoxide::hex::encode(secret_key);
+    let secret_key = hex::encode(secret_key.as_bytes());
 
     config.save(opt.find_amber_yaml_or_default())?;
 
@@ -95,7 +95,7 @@ fn encrypt(mut opt: cli::Opt, key: String, value: Option<String>) -> Result<()> 
         },
         Ok,
     )?;
-    config.encrypt(key, &value);
+    config.encrypt(key, &value)?;
     config.save(amber_yaml)
 }
 
