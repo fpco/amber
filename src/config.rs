@@ -2,11 +2,12 @@ use std::convert::TryInto;
 use std::{collections::HashMap, path::Path};
 
 use anyhow::*;
+use crypto_box::aead::generic_array::GenericArray;
 use crypto_box::rand_core::OsRng;
 use crypto_box::{seal, seal_open, PublicKey, SecretKey};
 use serde::{Deserialize, Serialize};
-use sodiumoxide::crypto::hash::sha256::{self, Digest};
-use sodiumoxide::hex;
+use sha2::Digest;
+use sha2::Sha256;
 
 /// Environment variable name containing the secret key
 pub const SECRET_KEY_ENV: &str = "AMBER_SECRET";
@@ -52,7 +53,7 @@ pub struct Config {
 #[serde(deny_unknown_fields)]
 struct Secret {
     /// Digest of the plaintext, to avoid unnecessary updates and minimize diffs
-    sha256: Digest,
+    sha256: [u8; 32],
     /// Ciphertext encrypted with our public key
     cipher: Vec<u8>,
 }
@@ -143,7 +144,9 @@ impl Config {
 
     /// Encrypt a new value, replacing as necessary
     pub fn encrypt(&mut self, key: String, value: &str) -> Result<()> {
-        let hash = sha256::hash(value.as_bytes());
+        let mut hasher = Sha256::new();
+        hasher.update(value);
+        let hash = hasher.finalize_reset().into();
         if let Some(old_secret) = self.secrets.get(&key) {
             if old_secret.sha256 == hash {
                 log::info!("New value matches old value, doing nothing");
@@ -222,13 +225,16 @@ impl Config {
 
 impl Secret {
     fn from_raw(raw: SecretRaw) -> Result<(String, Self)> {
+        let digest: [u8; 32] = hex::decode(&raw.sha256)
+            .ok()
+            .context("Non-hex sha256")?
+            .try_into()
+            .map_err(|_| anyhow!("Error parsing into digest"))?;
         Ok((
             raw.name,
             Secret {
-                sha256: Digest::from_slice(
-                    &hex::decode(&raw.sha256).ok().context("Non-hex sha256")?,
-                )
-                .context("Invalid SHA256 digest")?,
+                sha256: digest,
+                // sha256: hasher.finalize_reset().into(),
                 cipher: hex::decode(&raw.cipher)
                     .ok()
                     .context("Non-hex ciphertext")?,
@@ -241,7 +247,9 @@ impl Secret {
         (|| {
             let plain = seal_open(secret_key, &self.cipher[..])
                 .map_err(|_| anyhow!("Unable to decrypt secret"))?;
-            let digest = sha256::hash(&plain);
+            let mut hasher = Sha256::new();
+            hasher.update(&plain);
+            let digest: [u8; 32] = hasher.finalize_reset().into();
             ensure!(
                 digest == self.sha256,
                 "Hash mismatch, expected {}, received {}",

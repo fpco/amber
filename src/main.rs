@@ -6,6 +6,8 @@ mod mask;
 use std::{io::Read, path::Path};
 
 use anyhow::*;
+use base64::{encode, encode_config};
+use crypto_box::{SecretKey, rand_core::OsRng};
 use exec::CommandExecExt;
 use serde::Serialize;
 
@@ -100,8 +102,8 @@ fn encrypt(mut opt: cli::Opt, key: String, value: Option<String>) -> Result<()> 
 }
 
 fn generate(opt: cli::Opt, key: String) -> Result<()> {
-    let value = sodiumoxide::randombytes::randombytes(16);
-    let value = sodiumoxide::base64::encode(value, sodiumoxide::base64::Variant::UrlSafe);
+    let value = SecretKey::generate(&mut OsRng);
+    let value = encode_config(&value.as_bytes(), base64::URL_SAFE);
     let msg = format!("Your new secret value is {}: {}", key, value);
     encrypt(opt, key, Some(value))?;
     println!("{}", &msg);
