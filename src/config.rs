@@ -2,7 +2,6 @@ use std::convert::TryInto;
 use std::{collections::HashMap, path::Path};
 
 use anyhow::*;
-use crypto_box::aead::generic_array::GenericArray;
 use crypto_box::rand_core::OsRng;
 use crypto_box::{seal, seal_open, PublicKey, SecretKey};
 use serde::{Deserialize, Serialize};
@@ -209,7 +208,7 @@ impl Config {
     ) -> impl Iterator<Item = Result<(&'a String, String)>> {
         self.secrets.iter().map(move |(key, secret)| {
             secret
-                .decrypt(&self.public_key, secret_key, key)
+                .decrypt(secret_key, key)
                 .map(|plain| (key, plain))
         })
     }
@@ -219,7 +218,7 @@ impl Config {
         self.secrets
             .get(key)
             .with_context(|| format!("Key does not exist: {}", key))
-            .and_then(|secret| secret.decrypt(&self.public_key, secret_key, key))
+            .and_then(|secret| secret.decrypt(secret_key, key))
     }
 }
 
@@ -243,7 +242,7 @@ impl Secret {
     }
 
     /// Decrypt this secret, key is used for error message displays only
-    fn decrypt(&self, public_key: &PublicKey, secret_key: &SecretKey, key: &str) -> Result<String> {
+    fn decrypt(&self, secret_key: &SecretKey, key: &str) -> Result<String> {
         (|| {
             let plain = seal_open(secret_key, &self.cipher[..])
                 .map_err(|_| anyhow!("Unable to decrypt secret"))?;

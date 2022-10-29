@@ -6,7 +6,7 @@ mod mask;
 use std::{io::Read, path::Path};
 
 use anyhow::*;
-use base64::{encode, encode_config};
+use base64::encode_config;
 use crypto_box::{SecretKey, rand_core::OsRng};
 use exec::CommandExecExt;
 use serde::Serialize;
