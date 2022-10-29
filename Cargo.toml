@@ -35,12 +35,12 @@ vergen = { version = "7.4.2", default-features = false, features = ["git"] }
 assert_cmd = "2.0.4"
 tempfile = "3.3.0"
 
-# [profile.dev]
-# # Disabling debug info speeds up builds a bunch,
-# # and we don't rely on it for debugging that much.
-# debug = 0
+[profile.dev]
+# Disabling debug info speeds up builds a bunch,
+# and we don't rely on it for debugging that much.
+debug = 0
 
-# [profile.release]
-# panic = "abort"
-# opt-level = "z"
-# lto = true
+[profile.release]
+panic = "abort"
+opt-level = "z"
+lto = true

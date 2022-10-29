@@ -7,7 +7,7 @@ use std::{io::Read, path::Path};
 
 use anyhow::*;
 use base64::encode_config;
-use crypto_box::{SecretKey, rand_core::OsRng};
+use crypto_box::{rand_core::OsRng, SecretKey};
 use exec::CommandExecExt;
 use serde::Serialize;
 

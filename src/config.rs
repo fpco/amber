@@ -206,11 +206,9 @@ impl Config {
         &'a self,
         secret_key: &'a SecretKey,
     ) -> impl Iterator<Item = Result<(&'a String, String)>> {
-        self.secrets.iter().map(move |(key, secret)| {
-            secret
-                .decrypt(secret_key, key)
-                .map(|plain| (key, plain))
-        })
+        self.secrets
+            .iter()
+            .map(move |(key, secret)| secret.decrypt(secret_key, key).map(|plain| (key, plain)))
     }
 
     /// Look up a specific secret value
