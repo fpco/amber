@@ -231,7 +231,6 @@ impl Secret {
             raw.name,
             Secret {
                 sha256: digest,
-                // sha256: hasher.finalize_reset().into(),
                 cipher: hex::decode(&raw.cipher)
                     .ok()
                     .context("Non-hex ciphertext")?,
