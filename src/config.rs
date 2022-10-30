@@ -181,7 +181,7 @@ impl Config {
     pub fn load_secret_key(&self) -> Result<SecretKey> {
         (|| {
             let hex = std::env::var(SECRET_KEY_ENV)?;
-            let bs: [u8; 32] = hex::decode(&hex)
+            let bs: [u8; 32] = hex::decode(hex)
                 .ok()
                 .context("Invalid hex encoding")?
                 .try_into()

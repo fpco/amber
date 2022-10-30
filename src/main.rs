@@ -103,7 +103,7 @@ fn encrypt(mut opt: cli::Opt, key: String, value: Option<String>) -> Result<()> 
 
 fn generate(opt: cli::Opt, key: String) -> Result<()> {
     let value = SecretKey::generate(&mut OsRng);
-    let value = encode_config(&value.as_bytes(), base64::URL_SAFE);
+    let value = encode_config(value.as_bytes(), base64::URL_SAFE);
     let msg = format!("Your new secret value is {}: {}", key, value);
     encrypt(opt, key, Some(value))?;
     println!("{}", &msg);
