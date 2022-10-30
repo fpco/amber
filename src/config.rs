@@ -1,16 +1,12 @@
+use std::convert::TryInto;
 use std::{collections::HashMap, path::Path};
 
 use anyhow::*;
+use crypto_box::rand_core::OsRng;
+use crypto_box::{seal, seal_open, PublicKey, SecretKey};
 use serde::{Deserialize, Serialize};
-use sodiumoxide::crypto::hash::sha256::{self, Digest};
-use sodiumoxide::{
-    crypto::{
-        box_,
-        box_::{PublicKey, SecretKey},
-        sealedbox,
-    },
-    hex,
-};
+use sha2::Digest;
+use sha2::Sha256;
 
 /// Environment variable name containing the secret key
 pub const SECRET_KEY_ENV: &str = "AMBER_SECRET";
@@ -56,7 +52,7 @@ pub struct Config {
 #[serde(deny_unknown_fields)]
 struct Secret {
     /// Digest of the plaintext, to avoid unnecessary updates and minimize diffs
-    sha256: Digest,
+    sha256: [u8; 32],
     /// Ciphertext encrypted with our public key
     cipher: Vec<u8>,
 }
@@ -64,12 +60,12 @@ struct Secret {
 impl Config {
     /// Create a new keypair and config file
     pub fn new() -> (SecretKey, Self) {
-        let (public, secret) = box_::gen_keypair();
+        let secret_key = SecretKey::generate(&mut OsRng);
         let config = Config {
-            public_key: public,
+            public_key: secret_key.public_key(),
             secrets: HashMap::new(),
         };
-        (secret, config)
+        (secret_key, config)
     }
 
     fn from_raw(raw: ConfigRaw) -> Result<Self> {
@@ -79,10 +75,13 @@ impl Config {
             raw.file_format_version,
             FILE_FORMAT_VERSION
         );
-        let public_key = hex::decode(&raw.public_key)
+        let public_key: [u8; 32] = hex::decode(&raw.public_key)
             .ok()
-            .context("Public key is not hex")?;
-        let public_key = PublicKey::from_slice(&public_key).context("Invalid public key")?;
+            .context("Public key is not hex")?
+            .try_into()
+            .map_err(|_| anyhow!("Invalid Public key"))?;
+
+        let public_key = PublicKey::from(public_key);
 
         let mut secrets = HashMap::new();
 
@@ -115,7 +114,7 @@ impl Config {
         secrets.sort_unstable_by(|x, y| x.name.cmp(&y.name));
         ConfigRaw {
             file_format_version: FILE_FORMAT_VERSION,
-            public_key: hex::encode(self.public_key),
+            public_key: hex::encode(&self.public_key),
             secrets,
         }
     }
@@ -143,24 +142,30 @@ impl Config {
     }
 
     /// Encrypt a new value, replacing as necessary
-    pub fn encrypt(&mut self, key: String, value: &str) {
-        let hash = sha256::hash(value.as_bytes());
+    pub fn encrypt(&mut self, key: String, value: &str) -> Result<()> {
+        let mut hasher = Sha256::new();
+        hasher.update(value);
+        let hash = hasher.finalize_reset().into();
         if let Some(old_secret) = self.secrets.get(&key) {
             if old_secret.sha256 == hash {
                 log::info!("New value matches old value, doing nothing");
-                return;
+                return Ok(());
             } else {
                 log::warn!("Overwriting old secret value");
             }
         }
 
+        let cipher = seal(&mut OsRng, &self.public_key, value.as_bytes())
+            .map_err(|_| anyhow!("Error during encryption"))?;
+
         self.secrets.insert(
             key,
             Secret {
-                cipher: sealedbox::seal(value.as_bytes(), &self.public_key),
+                cipher,
                 sha256: hash,
             },
         );
+        Ok(())
     }
 
     /// Remove a value, if present
@@ -176,8 +181,12 @@ impl Config {
     pub fn load_secret_key(&self) -> Result<SecretKey> {
         (|| {
             let hex = std::env::var(SECRET_KEY_ENV)?;
-            let bs = hex::decode(&hex).ok().context("Invalid hex encoding")?;
-            let secret = SecretKey::from_slice(&bs).context("Invalid secret key")?;
+            let bs: [u8; 32] = hex::decode(hex)
+                .ok()
+                .context("Invalid hex encoding")?
+                .try_into()
+                .map_err(|_| anyhow!("Invalid secret key"))?;
+            let secret: SecretKey = SecretKey::from(bs);
             ensure!(
                 secret.public_key() == self.public_key,
                 "Secret key does not match config file's public key"
@@ -197,11 +206,9 @@ impl Config {
         &'a self,
         secret_key: &'a SecretKey,
     ) -> impl Iterator<Item = Result<(&'a String, String)>> {
-        self.secrets.iter().map(move |(key, secret)| {
-            secret
-                .decrypt(&self.public_key, secret_key, key)
-                .map(|plain| (key, plain))
-        })
+        self.secrets
+            .iter()
+            .map(move |(key, secret)| secret.decrypt(secret_key, key).map(|plain| (key, plain)))
     }
 
     /// Look up a specific secret value
@@ -209,19 +216,21 @@ impl Config {
         self.secrets
             .get(key)
             .with_context(|| format!("Key does not exist: {}", key))
-            .and_then(|secret| secret.decrypt(&self.public_key, secret_key, key))
+            .and_then(|secret| secret.decrypt(secret_key, key))
     }
 }
 
 impl Secret {
     fn from_raw(raw: SecretRaw) -> Result<(String, Self)> {
+        let digest: [u8; 32] = hex::decode(&raw.sha256)
+            .ok()
+            .context("Non-hex sha256")?
+            .try_into()
+            .map_err(|_| anyhow!("Error parsing into digest"))?;
         Ok((
             raw.name,
             Secret {
-                sha256: Digest::from_slice(
-                    &hex::decode(&raw.sha256).ok().context("Non-hex sha256")?,
-                )
-                .context("Invalid SHA256 digest")?,
+                sha256: digest,
                 cipher: hex::decode(&raw.cipher)
                     .ok()
                     .context("Non-hex ciphertext")?,
@@ -230,19 +239,20 @@ impl Secret {
     }
 
     /// Decrypt this secret, key is used for error message displays only
-    fn decrypt(&self, public_key: &PublicKey, secret_key: &SecretKey, key: &str) -> Result<String> {
+    fn decrypt(&self, secret_key: &SecretKey, key: &str) -> Result<String> {
         (|| {
-            let plain = sealedbox::open(&self.cipher, public_key, secret_key)
-                .ok()
-                .context("Unable to decrypt secret")?;
-            let digest = sha256::hash(&plain);
+            let plain = seal_open(secret_key, &self.cipher[..])
+                .map_err(|_| anyhow!("Unable to decrypt secret"))?;
+            let mut hasher = Sha256::new();
+            hasher.update(&plain);
+            let digest: [u8; 32] = hasher.finalize_reset().into();
             ensure!(
                 digest == self.sha256,
                 "Hash mismatch, expected {}, received {}",
                 hex::encode(self.sha256),
                 hex::encode(digest)
             );
-            String::from_utf8(plain).context("Invalid UTF-8 encoding")
+            String::from_utf8(plain.to_vec()).context("Invalid UTF-8 encoding")
         })()
         .with_context(|| format!("Error while decrypting secret named {}", key))
     }
