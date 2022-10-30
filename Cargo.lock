@@ -237,8 +237,9 @@ dependencies = [
 
 [[package]]
 name = "crypto_box"
-version = "0.8.1"
-source = "git+https://github.com/RustCrypto/nacl-compat.git?rev=0a0c83f99f37340aeab1a3ce083e9e22080cf6ff#0a0c83f99f37340aeab1a3ce083e9e22080cf6ff"
+version = "0.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fd26c32de5307fd08aac445a75c43472b14559d5dccdfba8022dbcd075838ebc"
 dependencies = [
  "aead",
  "blake2",
