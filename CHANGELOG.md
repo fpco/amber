@@ -1,9 +1,10 @@
 # Change log for Amber
 
-## 0.1.4 (Unreleased)
+## 0.1.4 (2022-11-29)
 
 * Upgrade to clap v4
 * Add `--only-secret-key` option for `amber init`
+* Switch to crypto_box from sodiumoxide.
 
 ## 0.1.3 (2022-03-13)
 
