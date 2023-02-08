@@ -194,9 +194,7 @@ impl Config {
             Ok(secret)
         })()
         .with_context(|| {
-            format!(
-                "Error loading secret key from environment variable {SECRET_KEY_ENV}"
-            )
+            format!("Error loading secret key from environment variable {SECRET_KEY_ENV}")
         })
     }
 
