@@ -194,10 +194,7 @@ impl Config {
             Ok(secret)
         })()
         .with_context(|| {
-            format!(
-                "Error loading secret key from environment variable {}",
-                SECRET_KEY_ENV
-            )
+            format!("Error loading secret key from environment variable {SECRET_KEY_ENV}")
         })
     }
 
@@ -215,7 +212,7 @@ impl Config {
     pub(crate) fn get_secret(&self, key: &str, secret_key: &SecretKey) -> Result<String> {
         self.secrets
             .get(key)
-            .with_context(|| format!("Key does not exist: {}", key))
+            .with_context(|| format!("Key does not exist: {key}"))
             .and_then(|secret| secret.decrypt(secret_key, key))
     }
 }
@@ -254,6 +251,6 @@ impl Secret {
             );
             String::from_utf8(plain.to_vec()).context("Invalid UTF-8 encoding")
         })()
-        .with_context(|| format!("Error while decrypting secret named {}", key))
+        .with_context(|| format!("Error while decrypting secret named {key}"))
     }
 }

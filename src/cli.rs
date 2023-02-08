@@ -95,7 +95,7 @@ static VERSION_SHA: Lazy<String> = Lazy::new(|| {
     let pkgver = env!("CARGO_PKG_VERSION");
     match option_env!("VERGEN_GIT_SHA") {
         None => pkgver.to_owned(),
-        Some(gitsha) => format!("{} (Git SHA1 {})", pkgver, gitsha),
+        Some(gitsha) => format!("{pkgver} (Git SHA1 {gitsha})"),
     }
 });
 
@@ -139,7 +139,7 @@ impl Opt {
         }
         self.amber_yaml
             .as_deref()
-            .with_context(|| format!("No file named {} found", DEFAULT_AMBER_YAML))
+            .with_context(|| format!("No file named {DEFAULT_AMBER_YAML} found"))
     }
 
     pub fn find_amber_yaml_or_default(&mut self) -> &Path {

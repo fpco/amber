@@ -51,9 +51,9 @@ fn init(mut opt: cli::Opt, only_secret_key: bool) -> Result<()> {
     config.save(opt.find_amber_yaml_or_default())?;
 
     if only_secret_key {
-        print!("{}", secret_key);
+        print!("{secret_key}");
     } else {
-        eprintln!("Your secret key is: {}", secret_key);
+        eprintln!("Your secret key is: {secret_key}");
         eprintln!(
             "Please save this key immediately! If you lose it, you will lose access to your secrets."
         );
@@ -104,7 +104,7 @@ fn encrypt(mut opt: cli::Opt, key: String, value: Option<String>) -> Result<()> 
 fn generate(opt: cli::Opt, key: String) -> Result<()> {
     let value = SecretKey::generate(&mut OsRng);
     let value = encode_config(value.as_bytes(), base64::URL_SAFE);
-    let msg = format!("Your new secret value is {}: {}", key, value);
+    let msg = format!("Your new secret value is {key}: {value}");
     encrypt(opt, key, Some(value))?;
     println!("{}", &msg);
     Ok(())
@@ -136,7 +136,7 @@ fn print(mut opt: cli::Opt, style: cli::PrintStyle) -> Result<()> {
     match style {
         cli::PrintStyle::SetEnv => pairs
             .iter()
-            .for_each(|(key, value)| println!("export {}={:?}", key, value)),
+            .for_each(|(key, value)| println!("export {key}={value:?}")),
         cli::PrintStyle::Json => {
             let secrets = to_objs(&pairs);
             serde_json::to_writer(std::io::stdout(), &secrets)?;

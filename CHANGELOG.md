@@ -1,5 +1,10 @@
 # Change log for Amber
 
+## 0.1.5 (2022-12-23)
+
+* Update rust toolchain to 1.67.0
+* Fix cargo lock file issue causing packaging problem.
+
 ## 0.1.4 (2022-11-29)
 
 * Upgrade to clap v4
