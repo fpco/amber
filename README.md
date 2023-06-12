@@ -68,6 +68,7 @@ Running `amber --help` will give you full, up to date set of instructions. The `
 * `amber init` to create a new secret key and `amber.yaml` file.
 * Securely store that secret key, such as in a password manager. Additionally, if desired, put that secret key in your CI system's secrets.
 * Add additional secrets with `amber encrypt`.
+    * Use the "read from stdin" feature to encrypt whole files `amber encrypt SECRET_SAUCE < my-secret-sauce.txt`
 * Commit your `amber.yaml` file into your repository.
 * Within your CI scripts, or when using your secrets on your own system:
     * Set the `AMBER_SECRET` environment variable to your secret key.
