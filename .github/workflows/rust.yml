@@ -58,6 +58,7 @@ jobs:
       with:
         toolchain: 1.79.0
         components: clippy, rustfmt
+        targets: x86_64-unknown-linux-musl
     - uses: Swatinem/rust-cache@v2
       with:
         key: ${{ runner.os }}-${{ hashFiles('Cargo.lock') }}-1.79.0-binary
