@@ -14,7 +14,7 @@ pub fn run_masked(mut cmd: Command, secrets: &[impl AsRef<[u8]>]) -> Result<()> 
     // Unfortunately LeftmostLongest isn't supported by the streaming interface
     // let ac = AhoCorasickBuilder::new().auto_configure(secrets).match_kind(MatchKind::LeftmostLongest).build(secrets);
 
-    let ac = AhoCorasick::new(secrets.iter());
+    let ac = AhoCorasick::new(secrets.iter()).context("Error creating AhoCorasick type")?;
     let mut child = cmd
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -48,7 +48,7 @@ pub fn run_masked(mut cmd: Command, secrets: &[impl AsRef<[u8]>]) -> Result<()> 
 }
 
 fn mask_stream(input: impl Read, output: impl Write, ac: AhoCorasick) -> Result<()> {
-    ac.stream_replace_all_with(input, output, replacer)
+    ac.try_stream_replace_all_with(input, output, replacer)
         .context("Error while masking a stream")
 }
 

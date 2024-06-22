@@ -2,8 +2,8 @@ use std::convert::TryInto;
 use std::{collections::HashMap, path::Path};
 
 use anyhow::*;
-use crypto_box::rand_core::OsRng;
-use crypto_box::{seal, seal_open, PublicKey, SecretKey};
+use crypto_box::aead::OsRng;
+use crypto_box::{PublicKey, SecretKey};
 use serde::{Deserialize, Serialize};
 use sha2::Digest;
 use sha2::Sha256;
@@ -155,7 +155,9 @@ impl Config {
             }
         }
 
-        let cipher = seal(&mut OsRng, &self.public_key, value.as_bytes())
+        let cipher = self
+            .public_key
+            .seal(&mut OsRng, value.as_bytes())
             .map_err(|_| anyhow!("Error during encryption"))?;
 
         self.secrets.insert(
@@ -238,7 +240,8 @@ impl Secret {
     /// Decrypt this secret, key is used for error message displays only
     fn decrypt(&self, secret_key: &SecretKey, key: &str) -> Result<String> {
         (|| {
-            let plain = seal_open(secret_key, &self.cipher[..])
+            let plain = secret_key
+                .unseal(&self.cipher[..])
                 .map_err(|_| anyhow!("Unable to decrypt secret"))?;
             let mut hasher = Sha256::new();
             hasher.update(&plain);

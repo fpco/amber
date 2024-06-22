@@ -6,8 +6,8 @@ mod mask;
 use std::{io::Read, path::Path};
 
 use anyhow::*;
-use base64::encode_config;
-use crypto_box::{rand_core::OsRng, SecretKey};
+use base64::Engine;
+use crypto_box::{aead::OsRng, SecretKey};
 use exec::CommandExecExt;
 use serde::Serialize;
 
@@ -46,7 +46,7 @@ fn main() -> Result<()> {
 
 fn init(mut opt: cli::Opt, only_secret_key: bool) -> Result<()> {
     let (secret_key, config) = config::Config::new();
-    let secret_key = hex::encode(secret_key.as_bytes());
+    let secret_key = hex::encode(secret_key.to_bytes());
 
     config.save(opt.find_amber_yaml_or_default())?;
 
@@ -103,7 +103,7 @@ fn encrypt(mut opt: cli::Opt, key: String, value: Option<String>) -> Result<()> 
 
 fn generate(opt: cli::Opt, key: String) -> Result<()> {
     let value = SecretKey::generate(&mut OsRng);
-    let value = encode_config(value.as_bytes(), base64::URL_SAFE);
+    let value =  base64::engine::general_purpose::STANDARD.encode(value.to_bytes());
     let msg = format!("Your new secret value is {key}: {value}");
     encrypt(opt, key, Some(value))?;
     println!("{}", &msg);
