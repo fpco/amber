@@ -1,10 +1,10 @@
 use anyhow::*;
 use std::path::Path;
-use vergen::{vergen, Config};
+use vergen::EmitBuilder;
 
 fn main() -> Result<()> {
     if Path::new(".git").exists() {
-        vergen(Config::default())
+        EmitBuilder::builder().git_sha(true).emit()
     } else {
         Ok(())
     }
