@@ -1,6 +1,6 @@
 # Change log for Amber
 
-## 0.1.6
+## 0.1.6 (2024-06-24)
 
 * Upgrade rust toolchain to 1.79.0
 * Upgrade dependencies.

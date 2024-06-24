@@ -24,19 +24,7 @@ makepkg -si
 
 ### Nix/NixOS
 
-Currently, amber is available as part of [nixpkgs](https://search.nixos.org/packages?channel=unstable&show=amber-secret&from=0&size=50&sort=relevance&type=packages&query=amber-secret) unstable. It
-should be available in the stable set in the next nixpkgs stable
-release. On NixOS distribution, you can install it through:
-
-``` shellsession
-$ nix-env -iA nixos.amber-secret
-```
-
-On non NixOS distribution, you can install it through:
-
-``` shellsession
-$ nix-env -iA nixpkgs.amber-secret
-```
+Amber is available as part of nixpkgs under the name `amber-secret`.
 
 ### GitHub actions
 
@@ -53,10 +41,11 @@ Example usage:
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-The [GITHUB_TOKEN](https://docs.github.com/en/actions/security-guides/automatic-token-authentication#about-the-github_token-secret) secret is optional, but is recommended to avoid
-rate limiting. You don't have to set up anything specific for it since
-for each workflow run, GitHub automatically populates that token for
-you.
+The
+[GITHUB_TOKEN](https://docs.github.com/en/actions/security-guides/automatic-token-authentication#about-the-github_token-secret)
+secret is optional, but is recommended to avoid rate limiting. You
+don't have to set up anything specific for it since for each workflow
+run, GitHub automatically populates that token for you.
 
 The [amber-demo](https://github.com/psibi/amber-demo) repository has an example workflow showcasing the
 usage of this GitHub action.
