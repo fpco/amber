@@ -78,7 +78,7 @@ jobs:
         mkdir artifacts
         cp target/x86_64-unknown-linux-musl/release/amber artifacts/amber-x86_64-unknown-linux-musl
         cp target/aarch64-unknown-linux-musl/release/amber artifacts/amber-aarch64-unknown-linux-musl
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
         name: binaries
         path: artifacts/*
@@ -107,7 +107,7 @@ jobs:
       run: |
         mkdir artifacts
         cp target/release/amber artifacts/amber-x86_64-apple-darwin
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
         name: binaries
         path: artifacts/*
@@ -136,7 +136,7 @@ jobs:
       run: |
         mkdir artifacts
         cp target/release/amber.exe artifacts/amber-x86_64-pc-windows-gnu.exe
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
         name: binaries
         path: artifacts/*
