@@ -1,5 +1,9 @@
 # Change log for Amber
 
+## 0.1.7 (2024-12-10)
+
+* Add ARM64 static binary.
+
 ## 0.1.6 (2024-06-24)
 
 * Upgrade rust toolchain to 1.79.0
